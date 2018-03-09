@@ -3,29 +3,28 @@
 # PLEASE EDIT NEXT LINES TO DEFINE YOUR OWN CONFIGURATION
 
 # Name of the log file
-LOGNAME="pihotspot.log"
+LOGNAME="busflix_hotspot.log"
 # Path where the logfile will be stored
 # be sure to add a / at the end of the path
-LOGPATH="/var/log/"
+LOGPATH="~/log"
 # Password for user root (MySql/MariaDB not system)
-MYSQL_PASSWORD="pihotspot"
+MYSQL_PASSWORD="nobodyisperfect"
 # Name of the hotspot that will be visible for users/customers
-HOTSPOT_NAME="pihotspot"
+HOTSPOT_NAME="Busflix Internet"
 # IP of the hotspot
-HOTSPOT_IP="192.168.10.1"
+HOTSPOT_IP="10.1.1.1"
 # Use HTTPS to connect to web portal
 # Set value to Y or N
 HOTSPOT_HTTPS="N"
 # Network where the hotspot is located
-HOTSPOT_NETWORK="192.168.10.0"
+HOTSPOT_NETWORK="10.1.1.0"
 # Secret word for FreeRadius
-FREERADIUS_SECRETKEY=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1`
+FREERADIUS_SECRETKEY="nobodyisperfect"
 # WAN interface (the one with Internet - default 'eth0' or long name for Debian 9+)
-WAN_INTERFACE=`ip link show | grep '^[1-9]' | awk -F ':' '{print $2}' | awk '{$1=$1};1' | grep '^e'`
+WAN_INTERFACE="wlan0"
 # LAN interface (the one for the hotspot)
-LAN_INTERFACE="wlan0"
-# Wifi driver
-LAN_WIFI_DRIVER="nl80211"
+LAN_INTERFACE="eth0"
+
 # Install Haserl (required if you want to use the default Coova Portal)
 # Set value to Y or N
 HASERL_INSTALL="N"
@@ -430,35 +429,6 @@ download_all_sources
 
 execute_command "service mariadb restart" true "Starting MySql service"
 
-execute_command "grep $WAN_INTERFACE /etc/network/interfaces" false "Update interface configuration ($WAN_INTERFACE)"
-if [ $COMMAND_RESULT -ne 0 ]; then
-cat >> /etc/network/interfaces << EOT
-
-auto $WAN_INTERFACE
-allow-hotplug $WAN_INTERFACE
-iface $WAN_INTERFACE inet dhcp
-EOT
-    check_returned_code $?
-fi
-
-execute_command "grep $LAN_INTERFACE /etc/network/interfaces" false "Update interface configuration ($LAN_INTERFACE)"
-if [ $COMMAND_RESULT -ne 0 ]; then
-cat >> /etc/network/interfaces << EOT
-
-auto $LAN_INTERFACE
-allow-hotplug $LAN_INTERFACE
-iface $LAN_INTERFACE inet static
-    address $HOTSPOT_IP
-    netmask 255.255.255.0
-    network $HOTSPOT_NETWORK
-    post-up echo 1 > /proc/sys/net/ipv4/ip_forward
-EOT
-    check_returned_code $?
-fi
-
-execute_command "ifup $WAN_INTERFACE" true "Activating the WAN interface"
-execute_command "ifup $LAN_INTERFACE" true "Activating the LAN interface"
-
 if [ $NETFLOW_ENABLED = "Y" ]; then
     display_message "Stopping fprobe service"
     service fprobe stop
@@ -676,23 +646,6 @@ if [ $HASERL_INSTALL = "Y" ]; then
     check_returned_code $?
 
 fi
-
-display_message "Creating configuration file for hostapd"
-echo 'DAEMON_CONF="/etc/hostapd/hostapd.conf"' >> /etc/default/hostapd
-check_returned_code $?
-display_message "Configuring hostapd"
-echo "interface=$LAN_INTERFACE
-driver=$LAN_WIFI_DRIVER
-ssid=$HOTSPOT_NAME
-hw_mode=g
-channel=6
-auth_algs=1
-beacon_int=100
-dtim_period=2
-max_num_sta=255
-rts_threshold=2347
-fragm_threshold=2346" > /etc/hostapd/hostapd.conf
-check_returned_code $?
 
 if [ $DALORADIUS_INSTALL = "Y" ]; then
 
