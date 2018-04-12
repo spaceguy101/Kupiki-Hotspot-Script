@@ -10,7 +10,7 @@ LOGPATH="~/log"
 # Password for user root (MySql/MariaDB not system)
 MYSQL_PASSWORD="nobodyisperfect"
 # Name of the hotspot that will be visible for users/customers
-HOTSPOT_NAME="Busflix Internet"
+HOTSPOT_NAME="busflix"
 # IP of the hotspot
 HOTSPOT_IP="10.1.1.1"
 # Use HTTPS to connect to web portal
@@ -37,16 +37,16 @@ CERT_DAYS="730"
 AVAHI_INSTALL="Y"
 # Install Daloradius Portal (compatible with FR2 only in theory)
 # Set value to Y or N
-DALORADIUS_INSTALL="Y"
+DALORADIUS_INSTALL="N"
 # Enable/Disable Bluetooth
 # Set value to Y or N
-BLUETOOTH_ENABLED="N"
+BLUETOOTH_ENABLED="Y"
 # Enable/Disable fail2ban to protect server from unwanted access
 # Set value to Y or N
-FAIL2BAN_ENABLED="Y"
+FAIL2BAN_ENABLED="N"
 # Enable/Disable Netflow logs to log all traffic requests. Must be crossed checked with assigned IP in the radius tables
 # Set value to Y or N
-NETFLOW_ENABLED="Y"
+NETFLOW_ENABLED="N"
 # Define how long Netflow logs will be stored
 # Sets the max life time for files generated for Netflow monitoring. The supplied maxlife_time accepts values such as 31d, 240H 1.5d etc.
 # Accpeted time scales are w (weeks) d (days) H (hours).
@@ -55,9 +55,9 @@ NETFLOW_ENABLED="Y"
 NETFLOW_LOGS_DAYS="365d"
 # Enable/Disable MAC authentication
 # Set value to Y or N
-MAC_AUTHENTICATION_ENABLED="N"
+MAC_AUTHENTICATION_ENABLED="Y"
 # Password for MAC authentication. Should be changed.
-MAC_AUTHENTICATION_PASSWORD="123456"
+MAC_AUTHENTICATION_PASSWORD="54321"
 
 # *************************************
 #
@@ -66,7 +66,7 @@ MAC_AUTHENTICATION_PASSWORD="123456"
 # *************************************
 
 # Current script version
-KUPIKI_VERSION="1.7.2"
+KUPIKI_VERSION="2.0.0"
 # Default Portal port
 HOTSPOT_PORT="80"
 HOTSPOT_PROTOCOL="http:\/\/"
@@ -824,30 +824,6 @@ EOT
     /usr/bin/fail2ban-client reload
     check_returned_code $?
 fi
-
-display_message "Create banner on login"
-/usr/bin/figlet -f lean -c "Kupiki Hotspot" | tr ' _/' ' /' > /etc/ssh/kupiki-banner
-check_returned_code $?
-
-display_message "Append script version to the banner"
-echo "
-
-Kupiki Hotspot - Version $KUPIKI_VERSION - (c) www.pihomeserver.fr
-
-" >> /etc/ssh/kupiki-banner
-check_returned_code $?
-
-display_message "Changing banner rights"
-chmod 644 /etc/ssh/kupiki-banner && chown root:root /etc/ssh/kupiki-banner
-check_returned_code $?
-
-display_message "Activating the banner for SSH"
-sed -i "s?^#Banner.*?Banner /etc/ssh/kupiki-banner?g" /etc/ssh/sshd_config
-check_returned_code $?
-
-display_message ""
-sed -i "s?^Banner.*?Banner /etc/ssh/kupiki-banner?g" /etc/ssh/sshd_config
-check_returned_code $?
 
 execute_command "service freeradius start" true "Starting freeradius service"
 
