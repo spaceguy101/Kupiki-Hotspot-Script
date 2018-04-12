@@ -6,7 +6,7 @@
 LOGNAME="busflix_hotspot.log"
 # Path where the logfile will be stored
 # be sure to add a / at the end of the path
-LOGPATH="~/log"
+LOGPATH="~/log/"
 # Password for user root (MySql/MariaDB not system)
 MYSQL_PASSWORD="nobodyisperfect"
 # Name of the hotspot that will be visible for users/customers
